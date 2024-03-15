@@ -1,0 +1,73 @@
+
+
+
+## Phase 1:
+
+copute log_prob,rewards and advantages
+
+Step1: def compute_log_prob(query_tensors,response_tensors,model):
+    ##query_tensors,response_tensors -> (B,Seq)
+    return log_prob,logits,values,masks
+
+    masks  is basicall applicable for the response length i.e. for which we need the log_probability else 0 
+
+Step2: run the above function for both fine-tuning model and frozen model
+
+    log_prob,logits,values- > from fine_tuning model
+    ref_log_prob,ref_logits,ref_values -> from frozen model
+
+
+Step 3: compute rewards at each time Step
+    run the kl-divergence i.e. log_prob - ref_log_prob -> (B,Seq)
+    rewards = []
+    for k in batch:
+        kl = run the kl-divergence i.e. log_prob - ref_log_prob -> (1,Seq)
+        kl = -kl*penalty
+        score = scores[k]
+        last_non_masked_index = masks[k].nonzero()[-1]
+        reward = kl.clone()
+        reward[last_non_masked_index] +=score
+        rewards.append(reward)
+
+    return torch.stack(rewards)
+
+Step4: compute advantages:
+    values = values*masks 
+    advantages,returns(Q) and values
+
+
+
+## Phase 2: 
+    take the mini batch from the above batch
+    for k epochs:
+        for batch in mini_batches:
+            compute log_prob,logits,vpreds(values),masks for batch
+            compute loss  = 
+            def loss(
+                    self,
+                    old_logprobs: torch.FloatTensor, ##from step 1 Phase 1
+                    values: torch.FloatTensor,  ##from step 1 Phase 1
+                    logits: torch.FloatTensor, ##from step 1 Phase 1
+                    vpreds: torch.FloatTensor, ##from Phase 2
+                    logprobs: torch.FloatTensor, ##from Phase 2
+                    mask: torch.LongTensor,  from Step 1 phase 1
+                    advantages: torch.FloatTensor, ##from Step4 phase 1
+                    returns: torch.FloatTensor,    ## from Step4 phase 1
+                    )
+
+            then update the parameters
+
+
+
+
+            
+
+        
+
+
+
+
+
+
+
+
